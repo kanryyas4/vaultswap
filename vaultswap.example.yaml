@@ -1,0 +1,26 @@
+# vaultswap configuration file
+# Copy this file to vaultswap.yaml and adjust to your environment.
+version: "1"
+
+providers:
+  # AWS Secrets Manager
+  - type: aws
+    alias: prod-aws
+    options:
+      region: us-east-1
+      # profile: my-aws-profile   # optional; uses default credential chain if omitted
+
+  # HashiCorp Vault
+  - type: vault
+    alias: prod-vault
+    options:
+      address: https://vault.example.com
+      # token: s.XXXXXXXXXXXX       # prefer VAULT_TOKEN env var
+      mount: secret
+
+  # GCP Secret Manager
+  - type: gcp
+    alias: prod-gcp
+    options:
+      project: my-gcp-project
+      # credentials_file: /path/to/sa.json  # optional; uses ADC if omitted
