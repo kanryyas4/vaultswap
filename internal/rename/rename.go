@@ -28,10 +28,35 @@ type Options struct {
 	DeleteOld   bool
 }
 
+// validate checks that all required fields in Options are non-empty and that
+// the operation is not a no-op (same alias and same key without DeleteOld).
+func (o Options) validate() error {
+	if o.SourceAlias == "" {
+		return fmt.Errorf("rename: source alias must not be empty")
+	}
+	if o.DestAlias == "" {
+		return fmt.Errorf("rename: dest alias must not be empty")
+	}
+	if o.OldKey == "" {
+		return fmt.Errorf("rename: old key must not be empty")
+	}
+	if o.NewKey == "" {
+		return fmt.Errorf("rename: new key must not be empty")
+	}
+	if o.SourceAlias == o.DestAlias && o.OldKey == o.NewKey {
+		return fmt.Errorf("rename: source and destination are identical (%s/%s)", o.SourceAlias, o.OldKey)
+	}
+	return nil
+}
+
 // Run performs the rename operation: reads the secret at OldKey from
 // SourceAlias, writes it to NewKey in DestAlias, and optionally deletes
 // the original.
 func (r *Renamer) Run(ctx context.Context, opts Options) error {
+	if err := opts.validate(); err != nil {
+		return err
+	}
+
 	src, ok := r.providers[opts.SourceAlias]
 	if !ok {
 		return fmt.Errorf("rename: unknown source alias %q", opts.SourceAlias)
